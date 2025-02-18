@@ -79,3 +79,8 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
 		path: '/'
 	});
 }
+
+export async function getUser(userId: string) {
+	const [result] = await db.select().from(table.user).where(eq(table.user.id, userId));
+	return result;
+}
