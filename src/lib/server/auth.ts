@@ -4,6 +4,7 @@ import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
+import { Argon2id } from 'oslo/password';
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
@@ -83,4 +84,20 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
 export async function getUser(userId: string) {
 	const [result] = await db.select().from(table.user).where(eq(table.user.id, userId));
 	return result;
+}
+
+export async function authenticateUser(username: string, password: string) {
+	const [user] = await db.select().from(table.user).where(eq(table.user.username, username));
+
+	if (!user?.passwordHash) {
+		return null;
+	}
+
+	const validPassword = await new Argon2id().verify(user.passwordHash, password);
+
+	if (!validPassword) {
+		return null;
+	}
+
+	return user;
 }

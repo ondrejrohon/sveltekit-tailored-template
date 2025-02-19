@@ -52,6 +52,7 @@
 		"@oslojs/encoding": "^1.1.0",
 		"drizzle-orm": "^0.38.4",
 		"jose": "^5.10.0",
+		"oslo": "^1.2.1",
 		"postgres": "^3.4.5"
 	}
 }

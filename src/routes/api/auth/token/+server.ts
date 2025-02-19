@@ -6,10 +6,14 @@ import { generateTokens, verifyRefreshToken } from '$lib/server/tokens';
 export async function POST({ request }) {
 	// Regular login logic
 	const { username, password } = await request.json();
-	const user = await auth.authenticateUser('username', username, password);
+	const user = await auth.authenticateUser(username, password);
+
+	if (!user) {
+		return json({ error: 'Invalid username or password' }, { status: 401 });
+	}
 
 	// Generate tokens instead of session
-	const { accessToken, refreshToken } = await generateTokens(user.userId);
+	const { accessToken, refreshToken } = await generateTokens(user.id);
 
 	return json({ accessToken, refreshToken });
 }
