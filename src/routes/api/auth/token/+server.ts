@@ -21,9 +21,18 @@ export async function POST({ request }) {
 // Refresh token endpoint
 export async function PUT({ request }) {
 	const { refreshToken } = await request.json();
-	const { userId } = await verifyRefreshToken(refreshToken);
+	try {
+		const { userId } = await verifyRefreshToken(refreshToken);
 
-	// Generate new tokens
-	const tokens = await generateTokens(userId);
-	return json(tokens);
+		if (!userId) {
+			return json({ error: 'Invalid refresh token' }, { status: 401 });
+		}
+
+		// Generate new tokens
+		const tokens = await generateTokens(userId as string);
+		return json(tokens);
+	} catch (error) {
+		console.error(error);
+		return json({ error: 'Invalid refresh token' }, { status: 401 });
+	}
 }

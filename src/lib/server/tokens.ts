@@ -1,8 +1,8 @@
-// lib/server/tokens.ts
+import { JWT_SECRET } from '$env/static/private';
 import { SignJWT, jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+const secret = new TextEncoder().encode(JWT_SECRET);
 
 export async function generateTokens(userId: string) {
 	const accessToken = await new SignJWT({ userId })

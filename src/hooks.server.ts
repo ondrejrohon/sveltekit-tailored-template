@@ -1,8 +1,9 @@
 import type { Handle } from '@sveltejs/kit';
 import { jwtVerify } from 'jose';
 import * as auth from '$lib/server/auth.js';
+import { JWT_SECRET } from '$env/static/private';
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+const secret = new TextEncoder().encode(JWT_SECRET);
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const authHeader = event.request.headers.get('authorization');
