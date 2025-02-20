@@ -15,7 +15,7 @@ export async function generateTokens(userId: string) {
 		tokenId: nanoid()
 	})
 		.setProtectedHeader({ alg: 'HS256' })
-		.setExpirationTime('7d')
+		.setExpirationTime('30d')
 		.sign(secret);
 
 	// Optionally store refresh token in database for revocation

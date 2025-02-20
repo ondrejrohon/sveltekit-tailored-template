@@ -1,5 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { jwtVerify } from 'jose';
+import { jwtVerify, errors } from 'jose';
 import * as auth from '$lib/server/auth.js';
 import { JWT_SECRET } from '$env/static/private';
 
@@ -14,9 +14,18 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		try {
 			const { payload } = await jwtVerify(token, secret);
 			event.locals.user = await auth.getUser(payload.userId as string);
-		} catch {
+		} catch (error) {
 			// Token invalid/expired
 			event.locals.user = null;
+
+			const errorMessage = error instanceof errors.JWTExpired ? 'token_expired' : 'token_invalid';
+
+			return new Response(JSON.stringify({ message: errorMessage }), {
+				status: 401,
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
 		}
 	} else {
 		// cookies auth for web
