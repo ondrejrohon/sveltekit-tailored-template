@@ -1,7 +1,11 @@
 import type { RequestHandler } from './$types';
 import { anthropic } from '$lib/server/anthropic';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
+	if (!locals.user) {
+		return new Response('Unauthorized', { status: 401 });
+	}
+
 	const { conversation } = await request.json();
 
 	const stream = new ReadableStream({
