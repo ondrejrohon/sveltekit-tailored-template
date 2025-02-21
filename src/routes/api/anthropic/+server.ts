@@ -1,5 +1,7 @@
 import type { RequestHandler } from './$types';
 import { anthropic } from '$lib/server/anthropic';
+import { db } from '$lib/server/db';
+import { conversation as conversationTable } from '$lib/server/db/schema';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -7,10 +9,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	const { conversation } = await request.json();
+	let response = '';
 
 	const stream = new ReadableStream({
 		async start(controller) {
 			try {
+				const userId = locals.user!.id;
 				anthropic.messages
 					.stream({
 						messages: conversation,
@@ -18,11 +22,23 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 						max_tokens: 1024
 					})
 					.on('text', (text) => {
+						response += text;
 						controller.enqueue(`data: ${JSON.stringify({ text })}\n\n`);
 					})
-					.on('end', () => {
-						controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
-						controller.close();
+					.on('end', async () => {
+						try {
+							const newConversation = [...conversation, { role: 'assistant', content: response }];
+							await db.insert(conversationTable).values({
+								userId,
+								conversation: JSON.stringify(newConversation)
+							});
+						} catch (error) {
+							console.log('failed to insert conversation');
+							console.error('Error details:', error);
+						} finally {
+							controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
+							controller.close();
+						}
 					})
 					.on('error', (error) => {
 						controller.error(error);

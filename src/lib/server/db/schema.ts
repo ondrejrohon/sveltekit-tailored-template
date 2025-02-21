@@ -1,4 +1,5 @@
-import { pgTable, text, integer, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
@@ -13,6 +14,20 @@ export const session = pgTable('session', {
 		.notNull()
 		.references(() => user.id),
 	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
+});
+
+export const conversation = pgTable('conversation', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id),
+	conversation: text('conversation').notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
+		.notNull()
+		.default(sql`CURRENT_TIMESTAMP`)
 });
 
 export type Session = typeof session.$inferSelect;
