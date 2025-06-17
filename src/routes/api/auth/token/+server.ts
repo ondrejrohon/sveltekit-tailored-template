@@ -4,12 +4,11 @@ import { json } from '@sveltejs/kit';
 import { generateTokens, verifyRefreshToken } from '$lib/server/tokens';
 
 export async function POST({ request }) {
-	// Regular login logic
-	const { username, password } = await request.json();
-	const user = await auth.authenticateUser(username, password);
+	const { email, password } = await request.json();
+	const user = await auth.authenticateUser(email, password);
 
 	if (!user) {
-		return json({ error: 'Invalid username or password' }, { status: 401 });
+		return json({ error: 'Invalid email or password' }, { status: 401 });
 	}
 
 	// Generate tokens instead of session
@@ -18,7 +17,6 @@ export async function POST({ request }) {
 	return json({ accessToken, refreshToken });
 }
 
-// Refresh token endpoint
 export async function PUT({ request }) {
 	const { refreshToken } = await request.json();
 	try {

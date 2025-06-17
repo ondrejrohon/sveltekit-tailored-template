@@ -32,7 +32,7 @@ export async function validateSessionToken(token: string) {
 	const [result] = await db
 		.select({
 			// Adjust user table here to tweak returned data
-			user: { id: table.user.id, username: table.user.username },
+			user: { id: table.user.id, email: table.user.email },
 			session: table.session
 		})
 		.from(table.session)
@@ -86,8 +86,8 @@ export async function getUser(userId: string) {
 	return result;
 }
 
-export async function authenticateUser(username: string, password: string) {
-	const [user] = await db.select().from(table.user).where(eq(table.user.username, username));
+export async function authenticateUser(email: string, password: string) {
+	const [user] = await db.select().from(table.user).where(eq(table.user.email, email));
 
 	if (!user?.passwordHash) {
 		return null;

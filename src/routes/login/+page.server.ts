@@ -17,19 +17,19 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	login: async (event) => {
 		const formData = await event.request.formData();
-		const username = formData.get('username');
+		const email = formData.get('email');
 		const password = formData.get('password');
 
-		if (!validateUsername(username)) {
+		if (!validateEmail(email)) {
 			return fail(400, {
-				message: 'Invalid username (min 3, max 31 characters, alphanumeric only)'
+				message: 'Invalid email'
 			});
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
 		}
 
-		const results = await db.select().from(table.user).where(eq(table.user.username, username));
+		const results = await db.select().from(table.user).where(eq(table.user.email, email));
 
 		const existingUser = results.at(0);
 		if (!existingUser) {
@@ -54,11 +54,11 @@ export const actions: Actions = {
 	},
 	register: async (event) => {
 		const formData = await event.request.formData();
-		const username = formData.get('username');
+		const email = formData.get('email');
 		const password = formData.get('password');
 
-		if (!validateUsername(username)) {
-			return fail(400, { message: 'Invalid username' });
+		if (!validateEmail(email)) {
+			return fail(400, { message: 'Invalid email' });
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password' });
@@ -74,7 +74,7 @@ export const actions: Actions = {
 		});
 
 		try {
-			await db.insert(table.user).values({ id: userId, username, passwordHash });
+			await db.insert(table.user).values({ id: userId, email, passwordHash });
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userId);
@@ -94,12 +94,12 @@ function generateUserId() {
 	return id;
 }
 
-function validateUsername(username: unknown): username is string {
+function validateEmail(email: unknown): email is string {
 	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 31 &&
-		/^[a-z0-9_-]+$/.test(username)
+		typeof email === 'string' &&
+		email.length >= 3 &&
+		email.length <= 255 &&
+		/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
 	);
 }
 
