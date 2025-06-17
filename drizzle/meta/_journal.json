@@ -8,6 +8,13 @@
       "when": 1750168708945,
       "tag": "0000_brown_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1750182369973,
+      "tag": "0001_redundant_sasquatch",
+      "breakpoints": true
     }
   ]
 }

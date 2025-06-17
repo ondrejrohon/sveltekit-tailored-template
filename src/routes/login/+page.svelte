@@ -19,4 +19,9 @@
 	<Button>Login</Button>
 	<Button formaction="?/register">Register</Button>
 </form>
+
+<span>or</span>
+
+<Button href="/login/google" class="google-button">Sign in with Google</Button>
+
 <p style="color: red">{form?.message ?? ''}</p>
