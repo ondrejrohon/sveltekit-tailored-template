@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
+	import { Button } from '$lib/components/ui/button';
 
 	let { form }: { form: ActionData } = $props();
 </script>
@@ -15,7 +16,7 @@
 		Password
 		<input type="password" name="password" />
 	</label>
-	<button>Login</button>
-	<button formaction="?/register">Register</button>
+	<Button>Login</Button>
+	<Button formaction="?/register">Register</Button>
 </form>
 <p style="color: red">{form?.message ?? ''}</p>
