@@ -44,10 +44,12 @@
 				<div class="flex gap-3">
 					<Button
 						class="flex-1 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+						type="submit"
 					>
 						Sign in
 					</Button>
 					<Button
+						type="submit"
 						formaction="?/register"
 						class="flex-1 rounded-md bg-gray-600 px-4 py-2 font-medium text-white transition-colors hover:bg-gray-700"
 					>
