@@ -33,7 +33,12 @@ export const actions: Actions = {
 
 		const existingUser = results.at(0);
 		if (!existingUser) {
-			return fail(400, { message: 'Incorrect username or password' });
+			return fail(400, { message: 'Incorrect email or password' });
+		}
+
+		// check if user has googleId and empty password
+		if (existingUser.googleId && !existingUser.passwordHash) {
+			return fail(400, { message: 'This account was used with Google sign in before' });
 		}
 
 		const validPassword = await verify(existingUser.passwordHash, password, {
@@ -43,7 +48,7 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 		if (!validPassword) {
-			return fail(400, { message: 'Incorrect username or password' });
+			return fail(400, { message: 'Incorrect email or password' });
 		}
 
 		const sessionToken = auth.generateSessionToken();
