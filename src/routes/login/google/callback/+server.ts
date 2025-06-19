@@ -11,6 +11,7 @@ import { eq } from 'drizzle-orm';
 interface GoogleIdTokenClaims {
 	sub: string;
 	name: string;
+	email: string;
 }
 
 export async function GET(event: RequestEvent): Promise<Response> {
@@ -57,8 +58,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 		});
 	}
 
-	// TODO: Replace this with your own DB query.
-	// const existingUser = await getUserFromGoogleId(googleUserId);
+	// get user from db by googleId
 	const [existingUser] = await db
 		.select()
 		.from(userTable)
@@ -67,6 +67,27 @@ export async function GET(event: RequestEvent): Promise<Response> {
 	if (existingUser?.id) {
 		const sessionToken = generateSessionToken();
 		const session = await createSession(sessionToken, existingUser.id);
+		setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		return new Response(null, {
+			status: 302,
+			headers: {
+				Location: '/'
+			}
+		});
+	}
+
+	// check if user exists by email
+	const [existingEmailUser] = await db.select().from(userTable).where(eq(userTable.email, email));
+
+	if (existingEmailUser?.id) {
+		// update user with googleId
+		await db
+			.update(userTable)
+			.set({ googleId: googleUserId })
+			.where(eq(userTable.id, existingEmailUser.id));
+
+		const sessionToken = generateSessionToken();
+		const session = await createSession(sessionToken, existingEmailUser.id);
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		return new Response(null, {
 			status: 302,
