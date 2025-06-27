@@ -1,5 +1,4 @@
 // routes/api/auth/token/+server.ts
-import * as auth from '$lib/server/auth';
 import { json } from '@sveltejs/kit';
 import { generateTokens, verifyRefreshToken } from '$lib/server/tokens';
 

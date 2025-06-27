@@ -1,11 +1,14 @@
-import { hash, verify } from '@node-rs/argon2';
-import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { fail, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
-import * as auth from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
+import { RefillingTokenBucket, Throttler } from '$lib/server/auth/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
+import {
+	createSession,
+	generateSessionToken,
+	setSessionTokenCookie
+} from '$lib/server/auth/session';
+import { getUserFromEmail, getUserPasswordHash } from '$lib/server/auth/user';
+import { verifyPasswordHash } from '$lib/server/auth/password';
+import { verifyEmailInput } from '$lib/server/auth/email';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
@@ -14,100 +17,83 @@ export const load: PageServerLoad = async (event) => {
 	return {};
 };
 
+const throttler = new Throttler<string>([0, 1, 2, 4, 8, 16, 30, 60, 180, 300]);
+const ipBucket = new RefillingTokenBucket<string>(20, 1);
+
 export const actions: Actions = {
 	login: async (event) => {
-		const formData = await event.request.formData();
-		const email = formData.get('email');
-		const password = formData.get('password');
-
-		if (!validateEmail(email)) {
-			return fail(400, {
-				message: 'Invalid email'
+		// TODO: Assumes X-Forwarded-For is always included.
+		const clientIP = event.request.headers.get('X-Forwarded-For');
+		if (clientIP !== null && !ipBucket.check(clientIP, 1)) {
+			return fail(429, {
+				message: 'Too many requests',
+				email: ''
 			});
 		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
-		}
 
-		const results = await db.select().from(table.user).where(eq(table.user.email, email));
-
-		const existingUser = results.at(0);
-		if (!existingUser) {
-			return fail(400, { message: 'Incorrect email or password' });
-		}
-
-		// check if user has googleId and empty password
-		if (existingUser.googleId && !existingUser.passwordHash) {
-			return fail(400, { message: 'This account was used with Google sign in before' });
-		}
-
-		const validPassword = await verify(existingUser.passwordHash, password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
-		if (!validPassword) {
-			return fail(400, { message: 'Incorrect email or password' });
-		}
-
-		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, existingUser.id);
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-
-		return redirect(302, '/');
-	},
-	register: async (event) => {
 		const formData = await event.request.formData();
 		const email = formData.get('email');
 		const password = formData.get('password');
-
-		if (!validateEmail(email)) {
-			return fail(400, { message: 'Invalid email' });
+		if (typeof email !== 'string' || typeof password !== 'string') {
+			return fail(400, {
+				message: 'Invalid or missing fields',
+				email: ''
+			});
 		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password' });
+		if (email === '' || password === '') {
+			return fail(400, {
+				message: 'Please enter your email and password.',
+				email
+			});
 		}
-
-		const userId = generateUserId();
-		const passwordHash = await hash(password, {
-			// recommended minimum parameters
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
-
-		try {
-			await db.insert(table.user).values({ id: userId, email, passwordHash });
-
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} catch (e: unknown) {
-			console.error(e);
-			return fail(500, { message: 'An error has occurred' });
+		if (!verifyEmailInput(email)) {
+			return fail(400, {
+				message: 'Invalid email',
+				email
+			});
 		}
+		const user = await getUserFromEmail(email);
+		if (user === null) {
+			return fail(400, {
+				message: 'Account does not exist',
+				email
+			});
+		}
+		if (clientIP !== null && !ipBucket.consume(clientIP, 1)) {
+			return fail(429, {
+				message: 'Too many requests',
+				email: ''
+			});
+		}
+		if (!throttler.consume(user.id)) {
+			return fail(429, {
+				message: 'Too many requests',
+				email: ''
+			});
+		}
+		const passwordHash = await getUserPasswordHash(user.id);
+		const validPassword = await verifyPasswordHash(passwordHash, password);
+		if (!validPassword) {
+			return fail(400, {
+				message: 'Invalid password',
+				email
+			});
+		}
+		throttler.reset(user.id);
+		// const sessionFlags: SessionFlags = {
+		// 	twoFactorVerified: false
+		// };
+		const sessionToken = generateSessionToken();
+		const session = await createSession(sessionToken, user.id);
+		setSessionTokenCookie(event, sessionToken, session.expiresAt);
+
+		if (!user.emailVerified) {
+			return redirect(302, '/verify-email');
+		}
+		// if (!user.registered2FA) {
+		// 	return redirect(302, '/2fa/setup');
+		// }
+		// return redirect(302, '/2fa');
 		return redirect(302, '/');
 	}
 };
-
-function generateUserId() {
-	// ID with 120 bits of entropy, or about the same as UUID v4.
-	const bytes = crypto.getRandomValues(new Uint8Array(15));
-	const id = encodeBase32LowerCase(bytes);
-	return id;
-}
-
-function validateEmail(email: unknown): email is string {
-	return (
-		typeof email === 'string' &&
-		email.length >= 3 &&
-		email.length <= 255 &&
-		/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
-	);
-}
-
-function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
-}

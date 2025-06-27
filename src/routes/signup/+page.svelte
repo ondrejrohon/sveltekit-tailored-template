@@ -9,21 +9,20 @@
 <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
 	<div class="w-full max-w-md space-y-8">
 		<div class="text-center">
-			<h1 class="mb-2 text-3xl font-bold text-gray-900">Welcome back</h1>
-			<p class="text-gray-600">Sign in to your account</p>
+			<h1 class="mb-2 text-3xl font-bold text-gray-900">Create your account</h1>
+			<p class="text-gray-600">Join us today and get started</p>
 		</div>
 
 		<div class="rounded-lg border border-gray-200 bg-white px-6 py-8 shadow-lg">
-			<form method="post" action="?/login" use:enhance class="space-y-6">
+			<form method="post" use:enhance class="space-y-6">
 				<div>
-					<label for="email" class="mb-2 block text-sm font-medium text-gray-700">
-						Email address
-					</label>
+					<label for="email" class="mb-2 block text-sm font-medium text-gray-700"> Email </label>
 					<input
 						id="email"
 						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 						name="email"
 						type="email"
+						value={form?.email ?? ''}
 						required
 					/>
 				</div>
@@ -45,7 +44,7 @@
 					class="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 					type="submit"
 				>
-					Sign in
+					Create account
 				</Button>
 			</form>
 
@@ -82,16 +81,16 @@
 								d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
 							/>
 						</svg>
-						Sign in with Google
+						Sign up with Google
 					</Button>
 				</div>
 			</div>
 
 			<div class="mt-6 text-center">
 				<p class="text-sm text-gray-600">
-					Don't have an account?
-					<a href="/signup" class="font-medium text-blue-600 transition-colors hover:text-blue-500">
-						Create one here
+					Already have an account?
+					<a href="/login" class="font-medium text-blue-600 transition-colors hover:text-blue-500">
+						Sign in here
 					</a>
 				</p>
 			</div>

@@ -16,7 +16,10 @@
 	<header class="fixed top-0 right-0 left-0 z-50 bg-white">
 		<nav class="flex items-center justify-between p-4">
 			<a href="/">Home</a>
-			<a href="/login">Login</a>
+			<div class="flex gap-4">
+				<a href="/login">Login</a>
+				<a href="/signup">Signup</a>
+			</div>
 		</nav>
 	</header>
 {/if}
