@@ -1,6 +1,6 @@
 // routes/api/auth/token/+server.ts
 import { json } from '@sveltejs/kit';
-import { generateTokens, verifyRefreshToken } from '$lib/server/tokens';
+import { generateTokens, verifyRefreshToken } from '$lib/server/jwt-auth';
 
 export async function POST({ request }) {
 	const { email, password } = await request.json();
