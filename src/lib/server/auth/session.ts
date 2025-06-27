@@ -15,7 +15,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		.innerJoin(tables.user, eq(tables.session.userId, tables.user.id))
 		.where(eq(tables.session.id, sessionId));
 
-	if (row === null) {
+	if (!row) {
 		return { session: null, user: null };
 	}
 	const { session, user } = row;

@@ -53,7 +53,7 @@ export const actions: Actions = {
 			});
 		}
 		const user = await getUserFromEmail(email);
-		if (user === null) {
+		if (!user) {
 			return fail(400, {
 				message: 'Account does not exist',
 				email

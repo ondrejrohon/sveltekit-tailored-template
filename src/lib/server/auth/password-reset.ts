@@ -44,7 +44,7 @@ export async function validatePasswordResetSessionToken(
 		.innerJoin(tables.user, eq(tables.passwordResetSession.userId, tables.user.id))
 		.where(eq(tables.passwordResetSession.id, sessionId));
 
-	if (row === null) {
+	if (!row) {
 		return { session: null, user: null };
 	}
 
@@ -83,11 +83,11 @@ export async function validatePasswordResetSessionRequest(
 	event: RequestEvent
 ): Promise<PasswordResetSessionValidationResult> {
 	const token = event.cookies.get('password_reset_session') ?? null;
-	if (token === null) {
+	if (!token) {
 		return { session: null, user: null };
 	}
 	const result = await validatePasswordResetSessionToken(token);
-	if (result.session === null) {
+	if (!result.session) {
 		deletePasswordResetSessionTokenCookie(event);
 	}
 	return result;

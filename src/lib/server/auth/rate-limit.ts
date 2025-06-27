@@ -11,7 +11,7 @@ export class RefillingTokenBucket<_Key> {
 
 	public check(key: _Key, cost: number): boolean {
 		const bucket = this.storage.get(key) ?? null;
-		if (bucket === null) {
+		if (!bucket) {
 			return true;
 		}
 		const now = Date.now();
@@ -25,7 +25,7 @@ export class RefillingTokenBucket<_Key> {
 	public consume(key: _Key, cost: number): boolean {
 		let bucket = this.storage.get(key) ?? null;
 		const now = Date.now();
-		if (bucket === null) {
+		if (!bucket) {
 			bucket = {
 				count: this.max - cost,
 				refilledAt: now
@@ -57,7 +57,7 @@ export class Throttler<_Key> {
 	public consume(key: _Key): boolean {
 		let counter = this.storage.get(key) ?? null;
 		const now = Date.now();
-		if (counter === null) {
+		if (!counter) {
 			counter = {
 				timeout: 0,
 				updatedAt: now
@@ -94,7 +94,7 @@ export class ExpiringTokenBucket<_Key> {
 	public check(key: _Key, cost: number): boolean {
 		const bucket = this.storage.get(key) ?? null;
 		const now = Date.now();
-		if (bucket === null) {
+		if (!bucket) {
 			return true;
 		}
 		if (now - bucket.createdAt >= this.expiresInSeconds * 1000) {
@@ -106,7 +106,7 @@ export class ExpiringTokenBucket<_Key> {
 	public consume(key: _Key, cost: number): boolean {
 		let bucket = this.storage.get(key) ?? null;
 		const now = Date.now();
-		if (bucket === null) {
+		if (!bucket) {
 			bucket = {
 				count: this.max - cost,
 				createdAt: now

@@ -13,7 +13,7 @@ export async function createUser(email: string, password: string): Promise<User>
 	const passwordHash = await hashPassword(password);
 	const id = crypto.randomUUID();
 	const [row] = await db.insert(tables.user).values({ id, email, passwordHash }).returning();
-	if (row === null) {
+	if (!row) {
 		throw new Error('Unexpected error');
 	}
 	return row;
@@ -57,7 +57,7 @@ export async function getUserPasswordHash(userId: string): Promise<string> {
 
 // export function getUserRecoverCode(userId: number): string {
 // 	const row = db.queryOne('SELECT recovery_code FROM user WHERE id = ?', [userId]);
-// 	if (row === null) {
+// 	if (!row) {
 // 		throw new Error('Invalid user ID');
 // 	}
 // 	return decryptToString(row.bytes(0));
@@ -65,11 +65,11 @@ export async function getUserPasswordHash(userId: string): Promise<string> {
 
 // export function getUserTOTPKey(userId: number): Uint8Array | null {
 // 	const row = db.queryOne('SELECT totp_key FROM user WHERE id = ?', [userId]);
-// 	if (row === null) {
+// 	if (!row) {
 // 		throw new Error('Invalid user ID');
 // 	}
 // 	const encrypted = row.bytesNullable(0);
-// 	if (encrypted === null) {
+// 	if (!encrypted) {
 // 		return null;
 // 	}
 // 	return decrypt(encrypted);

@@ -19,7 +19,7 @@ export async function getUserEmailVerificationRequest(
 				eq(table.emailVerificationRequest.userId, userId)
 			)
 		);
-	if (row === null) {
+	if (!row) {
 		return null;
 	}
 	return row;
@@ -80,15 +80,15 @@ export function deleteEmailVerificationRequestCookie(event: RequestEvent): void 
 export async function getUserEmailVerificationRequestFromRequest(
 	event: RequestEvent
 ): Promise<EmailVerificationRequest | null> {
-	if (event.locals.user === null) {
+	if (!event.locals.user) {
 		return null;
 	}
 	const id = event.cookies.get('email_verification') ?? null;
-	if (id === null) {
+	if (!id) {
 		return null;
 	}
 	const request = await getUserEmailVerificationRequest(event.locals.user.id, id);
-	if (request === null) {
+	if (!request) {
 		deleteEmailVerificationRequestCookie(event);
 	}
 	return request;

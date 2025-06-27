@@ -15,11 +15,11 @@ import { ExpiringTokenBucket } from '$lib/server/auth/rate-limit';
 import type { Actions, RequestEvent } from './$types';
 
 export async function load(event: RequestEvent) {
-	if (event.locals.user === null) {
+	if (!event.locals.user) {
 		return redirect(302, '/login');
 	}
 	let verificationRequest = await getUserEmailVerificationRequestFromRequest(event);
-	if (verificationRequest === null || Date.now() >= verificationRequest.expiresAt.getTime()) {
+	if (!verificationRequest || Date.now() >= verificationRequest.expiresAt.getTime()) {
 		if (event.locals.user.emailVerified) {
 			return redirect(302, '/');
 		}
@@ -44,7 +44,7 @@ export const actions: Actions = {
 };
 
 async function verifyCode(event: RequestEvent) {
-	if (event.locals.session === null || event.locals.user === null) {
+	if (!event.locals.session || !event.locals.user) {
 		return fail(401, {
 			verify: {
 				message: 'Not authenticated'
@@ -67,7 +67,7 @@ async function verifyCode(event: RequestEvent) {
 	}
 
 	let verificationRequest = await getUserEmailVerificationRequestFromRequest(event);
-	if (verificationRequest === null) {
+	if (!verificationRequest) {
 		return fail(401, {
 			verify: {
 				message: 'Not authenticated'
@@ -127,7 +127,7 @@ async function verifyCode(event: RequestEvent) {
 }
 
 async function resendEmail(event: RequestEvent) {
-	if (event.locals.session === null || event.locals.user === null) {
+	if (!event.locals.session || !event.locals.user) {
 		return fail(401, {
 			resend: {
 				message: 'Not authenticated'
@@ -151,7 +151,7 @@ async function resendEmail(event: RequestEvent) {
 	}
 
 	let verificationRequest = await getUserEmailVerificationRequestFromRequest(event);
-	if (verificationRequest === null) {
+	if (!verificationRequest) {
 		if (event.locals.user.emailVerified) {
 			return fail(403, {
 				resend: {

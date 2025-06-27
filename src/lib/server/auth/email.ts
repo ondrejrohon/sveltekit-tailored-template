@@ -11,7 +11,7 @@ export async function checkEmailAvailability(email: string): Promise<boolean> {
 		.select({ count: count() })
 		.from(tables.user)
 		.where(eq(tables.user.email, email));
-	if (row === null) {
+	if (!row) {
 		throw new Error();
 	}
 	return row.count === 0;
