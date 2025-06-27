@@ -43,6 +43,13 @@
       "when": 1751028793621,
       "tag": "0005_normal_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1751041865218,
+      "tag": "0006_pale_marvex",
+      "breakpoints": true
     }
   ]
 }

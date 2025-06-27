@@ -94,6 +94,15 @@
 						Create one here
 					</a>
 				</p>
+				<p class="text-sm text-gray-600">
+					Forgot your password?
+					<a
+						href="/reset-password"
+						class="font-medium text-blue-600 transition-colors hover:text-blue-500"
+					>
+						Reset it here
+					</a>
+				</p>
 			</div>
 
 			{#if form?.message}

@@ -1,0 +1,1 @@
+ALTER TABLE "password_reset_session" ALTER COLUMN "id" SET DATA TYPE text;

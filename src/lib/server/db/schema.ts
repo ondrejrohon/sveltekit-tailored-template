@@ -48,7 +48,7 @@ export const emailVerificationRequest = pgTable('email_verification_request', {
 });
 
 export const passwordResetSession = pgTable('password_reset_session', {
-	id: uuid('id').primaryKey(),
+	id: text('id').primaryKey(),
 	userId: text('user_id')
 		.notNull()
 		.references(() => user.id),
