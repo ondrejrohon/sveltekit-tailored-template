@@ -1,4 +1,8 @@
-import { generateSessionToken, createSession, setSessionTokenCookie } from '$lib/server/auth';
+import {
+	generateSessionToken,
+	createSession,
+	setSessionTokenCookie
+} from '$lib/server/auth/session';
 import { google } from '$lib/server/oauth';
 import { decodeIdToken } from 'arctic';
 

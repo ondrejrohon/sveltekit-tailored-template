@@ -1,7 +1,15 @@
 import type { Handle } from '@sveltejs/kit';
 import { jwtVerify, errors } from 'jose';
-import * as auth from '$lib/server/auth.js';
 import { JWT_SECRET } from '$env/static/private';
+import { db } from '$lib/server/db';
+import * as tables from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
+import { sessionCookieName } from '$lib/server/constants';
+import {
+	deleteSessionTokenCookie,
+	setSessionTokenCookie,
+	validateSessionToken
+} from '$lib/server/auth/session';
 
 const secret = new TextEncoder().encode(JWT_SECRET);
 
@@ -13,7 +21,10 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		const token = authHeader.split(' ')[1];
 		try {
 			const { payload } = await jwtVerify(token, secret);
-			event.locals.user = await auth.getUser(payload.userId as string);
+			event.locals.user = await db
+				.select()
+				.from(tables.user)
+				.where(eq(tables.user.id, payload.userId as string));
 		} catch (error) {
 			// Token invalid/expired
 			event.locals.user = null;
@@ -29,19 +40,18 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		}
 	} else {
 		// cookies auth for web
-
-		const sessionToken = event.cookies.get(auth.sessionCookieName);
+		const sessionToken = event.cookies.get(sessionCookieName);
 		if (!sessionToken) {
 			event.locals.user = null;
 			event.locals.session = null;
 			return resolve(event);
 		}
 
-		const { session, user } = await auth.validateSessionToken(sessionToken);
+		const { session, user } = await validateSessionToken(sessionToken);
 		if (session) {
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		} else {
-			auth.deleteSessionTokenCookie(event);
+			deleteSessionTokenCookie(event);
 		}
 
 		event.locals.user = user;
