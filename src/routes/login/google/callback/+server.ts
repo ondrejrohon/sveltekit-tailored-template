@@ -87,7 +87,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 		// update user with googleId
 		await db
 			.update(userTable)
-			.set({ googleId: googleUserId })
+			.set({ googleId: googleUserId, emailVerified: true })
 			.where(eq(userTable.id, existingEmailUser.id));
 
 		const sessionToken = generateSessionToken();
@@ -107,7 +107,8 @@ export async function GET(event: RequestEvent): Promise<Response> {
 			id: crypto.randomUUID(),
 			googleId: googleUserId,
 			email,
-			passwordHash: ''
+			passwordHash: '',
+			emailVerified: true
 		})
 		.returning();
 
