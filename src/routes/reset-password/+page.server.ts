@@ -1,71 +1,79 @@
-import { verifyEmailInput } from '$lib/server/lucia-auth/email';
-import { getUserFromEmail } from '$lib/server/lucia-auth/user';
 import {
-	createPasswordResetSession,
+	deletePasswordResetSessionTokenCookie,
 	invalidateUserPasswordResetSessions,
-	sendPasswordResetEmail,
-	setPasswordResetSessionTokenCookie
+	validatePasswordResetSessionRequest
 } from '$lib/server/lucia-auth/password-reset';
-import { RefillingTokenBucket } from '$lib/server/lucia-auth/rate-limit';
-import { generateSessionToken } from '$lib/server/lucia-auth/session';
 import { fail, redirect } from '@sveltejs/kit';
+import { verifyPasswordStrength } from '$lib/server/lucia-auth/password';
+import {
+	createSession,
+	generateSessionToken,
+	invalidateUserSessions,
+	setSessionTokenCookie
+} from '$lib/server/lucia-auth/session';
+import { updateUserPassword } from '$lib/server/lucia-auth/user';
 
 import type { Actions, RequestEvent } from './$types';
 
-const ipBucket = new RefillingTokenBucket<string>(3, 60);
-const userBucket = new RefillingTokenBucket<string>(3, 60);
+export async function load(event: RequestEvent) {
+	const { session } = await validatePasswordResetSessionRequest(event);
+	if (session === null) {
+		return redirect(302, '/forgot-password');
+	}
+	if (!session.emailVerified) {
+		return redirect(302, '/reset-password/verify-email');
+	}
+	// if (user.registered2FA && !session.twoFactorVerified) {
+	// 	return redirect(302, "/reset-password/2fa");
+	// }
+	return {};
+}
 
 export const actions: Actions = {
 	default: action
 };
 
 async function action(event: RequestEvent) {
-	// TODO: Assumes X-Forwarded-For is always included.
-	const clientIP = event.request.headers.get('X-Forwarded-For');
-	if (clientIP !== null && !ipBucket.check(clientIP, 1)) {
-		return fail(429, {
-			message: 'Too many requests',
-			email: ''
+	const { session: passwordResetSession, user } = await validatePasswordResetSessionRequest(event);
+	if (passwordResetSession === null) {
+		return fail(401, {
+			message: 'Not authenticated'
+		});
+	}
+	if (!passwordResetSession.emailVerified) {
+		return fail(403, {
+			message: 'Forbidden'
+		});
+	}
+	// if (user.registered2FA && !passwordResetSession.twoFactorVerified) {
+	// 	return fail(403, {
+	// 		message: "Forbidden"
+	// 	});
+	// }
+	const formData = await event.request.formData();
+	const password = formData.get('password');
+	if (typeof password !== 'string') {
+		return fail(400, {
+			message: 'Invalid or missing fields'
 		});
 	}
 
-	const formData = await event.request.formData();
-	const email = formData.get('email');
-	if (typeof email !== 'string') {
+	const strongPassword = await verifyPasswordStrength(password);
+	if (!strongPassword) {
 		return fail(400, {
-			message: 'Invalid or missing fields',
-			email: ''
+			message: 'Weak password'
 		});
 	}
-	if (!verifyEmailInput(email)) {
-		return fail(400, {
-			message: 'Invalid email',
-			email
-		});
-	}
-	const user = await getUserFromEmail(email);
-	if (user === null) {
-		return fail(400, {
-			message: 'Account does not exist',
-			email
-		});
-	}
-	if (clientIP !== null && !ipBucket.consume(clientIP, 1)) {
-		return fail(400, {
-			message: 'Too many requests',
-			email
-		});
-	}
-	if (!userBucket.consume(user.id, 1)) {
-		return fail(400, {
-			message: 'Too many requests',
-			email
-		});
-	}
-	invalidateUserPasswordResetSessions(user.id);
+	invalidateUserPasswordResetSessions(passwordResetSession.userId);
+	invalidateUserSessions(passwordResetSession.userId);
+	await updateUserPassword(passwordResetSession.userId, password);
+
+	// const sessionFlags: SessionFlags = {
+	// 	twoFactorVerified: passwordResetSession.twoFactorVerified
+	// };
 	const sessionToken = generateSessionToken();
-	const session = await createPasswordResetSession(sessionToken, user.id, user.email);
-	sendPasswordResetEmail(session.email, session.code);
-	setPasswordResetSessionTokenCookie(event, sessionToken, session.expiresAt);
-	return redirect(302, '/reset-password/verify-email');
+	const session = await createSession(sessionToken, user.id);
+	setSessionTokenCookie(event, sessionToken, session.expiresAt);
+	deletePasswordResetSessionTokenCookie(event);
+	return redirect(302, '/');
 }
