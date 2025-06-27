@@ -34,13 +34,16 @@ export async function createEmailVerificationRequest(
 
 	const code = generateRandomOTP();
 	const expiresAt = new Date(Date.now() + 1000 * 60 * 10);
-	const [row] = await db.insert(table.emailVerificationRequest).values({
-		id,
-		userId,
-		code,
-		email,
-		expiresAt
-	});
+	const [row] = await db
+		.insert(table.emailVerificationRequest)
+		.values({
+			id,
+			userId,
+			code,
+			email,
+			expiresAt
+		})
+		.returning();
 	return row;
 }
 
