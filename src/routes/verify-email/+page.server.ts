@@ -8,9 +8,9 @@ import {
 	sendVerificationEmailBucket,
 	setEmailVerificationRequestCookie
 } from '$lib/server/email/verify-email';
-import { invalidateUserPasswordResetSessions } from '$lib/server/auth/password-reset';
-import { updateUserEmailAndSetEmailAsVerified } from '$lib/server/auth/user';
-import { ExpiringTokenBucket } from '$lib/server/auth/rate-limit';
+import { invalidateUserPasswordResetSessions } from '$lib/server/lucia-auth/password-reset';
+import { updateUserEmailAndSetEmailAsVerified } from '$lib/server/lucia-auth/user';
+import { ExpiringTokenBucket } from '$lib/server/lucia-auth/rate-limit';
 
 import type { Actions, RequestEvent } from './$types';
 

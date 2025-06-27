@@ -1,21 +1,21 @@
 import type { PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import { checkEmailAvailability, verifyEmailInput } from '$lib/server/auth/email';
-import { createUser } from '$lib/server/auth/user';
-import { RefillingTokenBucket } from '$lib/server/auth/rate-limit';
-import { verifyPasswordStrength } from '$lib/server/auth/password';
+import { checkEmailAvailability, verifyEmailInput } from '$lib/server/lucia-auth/email';
+import { createUser } from '$lib/server/lucia-auth/user';
+import { RefillingTokenBucket } from '$lib/server/lucia-auth/rate-limit';
+import { verifyPasswordStrength } from '$lib/server/lucia-auth/password';
 import {
 	createSession,
 	generateSessionToken,
 	setSessionTokenCookie
-} from '$lib/server/auth/session';
+} from '$lib/server/lucia-auth/session';
 import {
 	createEmailVerificationRequest,
 	sendVerificationEmail,
 	setEmailVerificationRequestCookie
-} from '$lib/server/auth/email-verification';
+} from '$lib/server/lucia-auth/email-verification';
 
-// import type { SessionFlags } from '$lib/server/auth/session';
+// import type { SessionFlags } from '$lib/server/lucia-auth/session';
 import type { Actions, RequestEvent } from './$types';
 
 const ipBucket = new RefillingTokenBucket<string>(3, 10);

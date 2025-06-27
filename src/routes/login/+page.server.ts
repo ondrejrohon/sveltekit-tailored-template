@@ -1,14 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { RefillingTokenBucket, Throttler } from '$lib/server/auth/rate-limit';
+import { RefillingTokenBucket, Throttler } from '$lib/server/lucia-auth/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 import {
 	createSession,
 	generateSessionToken,
 	setSessionTokenCookie
-} from '$lib/server/auth/session';
-import { getUserFromEmail, getUserPasswordHash } from '$lib/server/auth/user';
-import { verifyPasswordHash } from '$lib/server/auth/password';
-import { verifyEmailInput } from '$lib/server/auth/email';
+} from '$lib/server/lucia-auth/session';
+import { getUserFromEmail, getUserPasswordHash } from '$lib/server/lucia-auth/user';
+import { verifyPasswordHash } from '$lib/server/lucia-auth/password';
+import { verifyEmailInput } from '$lib/server/lucia-auth/email';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {

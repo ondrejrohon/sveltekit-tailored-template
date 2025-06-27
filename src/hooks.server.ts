@@ -9,7 +9,7 @@ import {
 	deleteSessionTokenCookie,
 	setSessionTokenCookie,
 	validateSessionToken
-} from '$lib/server/auth/session';
+} from '$lib/server/lucia-auth/session';
 
 const secret = new TextEncoder().encode(JWT_SECRET);
 

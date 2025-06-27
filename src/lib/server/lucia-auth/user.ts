@@ -1,6 +1,6 @@
-// import { decrypt, decryptToString, encrypt, encryptString } from '$lib/server/auth/encryption';
-import { hashPassword } from '$lib/server/auth/password';
-// import { generateRandomRecoveryCode } from '$lib/server/auth/utils';
+// import { decrypt, decryptToString, encrypt, encryptString } from '$lib/server/lucia-auth/encryption';
+import { hashPassword } from '$lib/server/lucia-auth/password';
+// import { generateRandomRecoveryCode } from '$lib/server/lucia-auth/utils';
 import { db } from '$lib/server/db';
 import * as tables from '$lib/server/db/schema';
 import { and, eq } from 'drizzle-orm';

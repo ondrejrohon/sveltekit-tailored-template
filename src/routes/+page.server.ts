@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { deleteSessionTokenCookie, invalidateSession } from '$lib/server/auth/session';
+import { deleteSessionTokenCookie, invalidateSession } from '$lib/server/lucia-auth/session';
 
 export const actions: Actions = {
 	logout: async (event) => {

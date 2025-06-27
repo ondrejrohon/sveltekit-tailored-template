@@ -2,7 +2,7 @@ import {
 	generateSessionToken,
 	createSession,
 	setSessionTokenCookie
-} from '$lib/server/auth/session';
+} from '$lib/server/lucia-auth/session';
 import { google } from '$lib/server/oauth';
 import { decodeIdToken } from 'arctic';
 

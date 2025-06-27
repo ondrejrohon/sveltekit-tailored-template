@@ -1,5 +1,5 @@
-import { generateRandomOTP } from '$lib/server/auth/utils';
-import { ExpiringTokenBucket } from '$lib/server/auth/rate-limit';
+import { generateRandomOTP } from '$lib/server/lucia-auth/utils';
+import { ExpiringTokenBucket } from '$lib/server/lucia-auth/rate-limit';
 import { and, eq } from 'drizzle-orm';
 
 import type { RequestEvent } from '@sveltejs/kit';
