@@ -1,0 +1,1 @@
+ALTER TABLE "password_reset_session" ADD COLUMN "email_verified" boolean DEFAULT false NOT NULL;
