@@ -1,7 +1,60 @@
 #!/bin/bash
 
+# Remote server setup script for slova-sveltekit deployment
+# This script runs the server setup on a remote server
+
+set -e
+
+echo "Remote server setup for slova-sveltekit deployment"
+echo "=================================================="
+echo ""
+
+# Interactive configuration for remote server
+echo "Please provide the following server configuration:"
+read -p "Server IP address: " SERVER_IP
+
+if [ -z "$SERVER_IP" ]; then
+    echo "Error: Server IP address cannot be empty!"
+    exit 1
+fi
+
+read -p "SSH username (default: root): " SSH_USER
+SSH_USER=${SSH_USER:-root}
+
+echo ""
+echo "Configuration summary:"
+echo "Server IP: $SERVER_IP"
+echo "SSH User: $SSH_USER"
+echo "SSH Key: Using default SSH key configuration"
+echo ""
+
+read -p "Continue with this configuration? (y/N): " CONFIRM
+if [[ ! $CONFIRM =~ ^[Yy]$ ]]; then
+    echo "Setup cancelled."
+    exit 0
+fi
+
+echo ""
+echo "Testing SSH connection..."
+if ! ssh -o ConnectTimeout=10 -o BatchMode=yes "$SSH_USER@$SERVER_IP" "echo 'SSH connection successful'" 2>/dev/null; then
+    echo "Error: Cannot connect to server via SSH. Please check:"
+    echo "1. Server IP address is correct"
+    echo "2. SSH key is configured and has proper permissions"
+    echo "3. SSH key is added to server's authorized_keys"
+    echo "4. Server is accessible from your network"
+    exit 1
+fi
+
+echo "SSH connection successful!"
+echo ""
+
+# Create a temporary file for the remote script
+TEMP_SCRIPT=$(mktemp)
+cat > "$TEMP_SCRIPT" << 'REMOTE_SCRIPT_EOF'
+#!/bin/bash
+
 # Server setup script for slova-sveltekit deployment
-# Run this on your Hetzner server
+# This script runs on the remote server
 
 set -e
 
@@ -84,23 +137,9 @@ GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 \q
 EOF
 
-# TODO: Configure nginx
-# # Configure nginx
-# echo "Configuring nginx..."
-# sudo cp nginx.conf.template /etc/nginx/sites-available/slova-sveltekit
-# sudo ln -sf /etc/nginx/sites-available/slova-sveltekit /etc/nginx/sites-enabled/
-# sudo rm -f /etc/nginx/sites-enabled/default
-
-# # Test nginx configuration
-# sudo nginx -t
-
-# # Start nginx
-# sudo systemctl restart nginx
-# sudo systemctl enable nginx
-
 # Create PM2 ecosystem file
 echo "Creating PM2 ecosystem file..."
-cat > /app/ecosystem.config.js << EOF
+cat > /app/ecosystem.config.js << 'EOF'
 module.exports = {
   apps: [{
     name: 'slova-sveltekit',
@@ -143,4 +182,20 @@ echo "2. Configure SSL with Let's Encrypt (recommended)"
 echo "3. Create .env.production file with your production settings"
 echo "4. Test deployment from your local machine"
 echo ""
-echo "Note: Save your database credentials securely!" 
+echo "Note: Save your database credentials securely!"
+REMOTE_SCRIPT_EOF
+
+echo "Uploading and executing setup script on remote server..."
+echo ""
+
+# Copy the script to the remote server and execute it
+scp "$TEMP_SCRIPT" "$SSH_USER@$SERVER_IP:/tmp/server-setup.sh"
+ssh -t "$SSH_USER@$SERVER_IP" "chmod +x /tmp/server-setup.sh && /tmp/server-setup.sh"
+
+# Clean up the temporary file
+rm "$TEMP_SCRIPT"
+
+echo ""
+echo "Remote server setup completed!"
+echo ""
+echo "You can now proceed with deployment using the deploy.sh script." 
