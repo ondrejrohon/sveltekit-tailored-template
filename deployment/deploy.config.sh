@@ -23,7 +23,7 @@ HEALTH_CHECK_TIMEOUT="30"           # Health check timeout in seconds
 APP_START_TIMEOUT="10"              # Time to wait for app to start
 
 # Backup configuration
-KEEP_BACKUPS="5"                    # Number of backups to keep
+KEEP_BACKUPS="2"                    # Number of backups to keep
 
 # SSH options
 SSH_OPTIONS="-o ConnectTimeout=10 -o BatchMode=yes"
