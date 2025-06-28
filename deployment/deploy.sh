@@ -5,17 +5,9 @@
 
 set -e  # Exit on any error
 
-# Load configuration
-if [ -f "deploy.config.local.sh" ]; then
-    source deploy.config.local.sh
-else
-    source deploy.config.sh
-fi
-
 # Configuration overrides
 ENVIRONMENT=${1:-production}
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-DEPLOYMENT_NAME="${APP_NAME}_${TIMESTAMP}"
 LOCAL_BUILD_DIR="deployment-package"
 LOG_FILE="deploy.log"
 
@@ -42,6 +34,36 @@ success() {
 
 warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1" | tee -a "$LOG_FILE"
+}
+
+# Load configuration from .env.production
+load_configuration() {
+    # Load default values first
+    if [ -f "deploy.defaults.sh" ]; then
+        source deploy.defaults.sh
+    else
+        error "Default configuration file deploy.defaults.sh not found"
+    fi
+    
+    if [ -f "../.env.production" ]; then
+        # Source the .env.production file
+        set -a  # automatically export all variables
+        source ../.env.production
+        set +a  # stop automatically exporting
+        log "Configuration loaded from .env.production"
+    elif [ -f "deploy.config.local.sh" ]; then
+        # Fallback to local config for backward compatibility
+        source deploy.config.local.sh
+        warning "Using deploy.config.local.sh (deprecated). Please run ./setup-env.sh to create .env.production"
+    else
+        error "No configuration found. Please run ./setup-env.sh to create .env.production"
+    fi
+    
+    # Set deployment name after loading config
+    DEPLOYMENT_NAME="${APP_NAME}_${TIMESTAMP}"
+    
+    # Update HEALTH_CHECK_URL with the actual APP_PORT
+    HEALTH_CHECK_URL="http://localhost:${APP_PORT}/api/health"
 }
 
 # Check if server is reachable
@@ -108,6 +130,7 @@ create_package() {
     # Copy package.json and other necessary files
     cp package.json "$LOCAL_BUILD_DIR/"
     cp bun.lock "$LOCAL_BUILD_DIR/"
+    cp svelte.config.js "$LOCAL_BUILD_DIR/"
     cp drizzle.config.ts "$LOCAL_BUILD_DIR/"
     cp -r drizzle "$LOCAL_BUILD_DIR/"
     
@@ -186,7 +209,7 @@ tar -xzf "${DEPLOYMENT_NAME}.tar.gz" -C current/
 
 # Install dependencies
 cd current
-bun install --production
+bun install
 
 # Run database migrations
 echo "Running database migrations..."
@@ -263,6 +286,8 @@ cleanup() {
 
 # Main deployment function
 main() {
+    load_configuration
+    
     log "Starting deployment to $ENVIRONMENT environment..."
     log "Server: $SERVER_USER@$SERVER_HOST"
     log "App: $APP_NAME"
