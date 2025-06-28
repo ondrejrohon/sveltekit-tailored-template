@@ -106,6 +106,21 @@ if [ -z "$SERVER_HOST" ] || [[ $RECONFIGURE =~ ^[Yy]$ ]]; then
     prompt_with_default "Database name" "$CURRENT_DB_NAME" "DB_NAME"
     prompt_password "Database password" "DB_PASS"
 
+    echo ""
+    echo "🔐 Security Configuration"
+    echo "------------------------"
+    # Read existing values if they exist
+    CURRENT_JWT_SECRET=$(grep '^JWT_SECRET=' .env.production 2>/dev/null | cut -d'=' -f2 || echo "")
+    CURRENT_ENCRYPTION_KEY=$(grep '^ENCRYPTION_KEY=' .env.production 2>/dev/null | cut -d'=' -f2 || echo "")
+    
+    # Generate new security keys
+    echo "Generating JWT secret..."
+    JWT_SECRET=$(openssl rand -hex 64)
+    echo "Generating encryption key..."
+    ENCRYPTION_KEY=$(openssl rand --base64 16)
+    
+    echo "✅ Security keys generated successfully!"
+
     # Validate required fields
     if [ -z "$SERVER_HOST" ] || [ -z "$SERVER_USER" ] || [ -z "$APP_NAME" ] || [ -z "$DEPLOY_PATH" ] || [ -z "$DB_NAME" ] || [ -z "$DB_PASS" ] || [ -z "$APP_PORT" ]; then
         echo "❌ Error: All fields are required!"
@@ -135,6 +150,10 @@ DB_PORT=5432
 DB_NAME=$DB_NAME
 DB_USER=slova_user
 DB_PASS=$DB_PASS
+
+# Security Configuration
+JWT_SECRET=$JWT_SECRET
+ENCRYPTION_KEY=$ENCRYPTION_KEY
 EOF
 
     echo "✅ .env.production file created successfully!"
@@ -147,6 +166,7 @@ echo "   Server: $SERVER_USER@$SERVER_HOST"
 echo "   App: $APP_NAME (port $APP_PORT)"
 echo "   Deploy path: $DEPLOY_PATH"
 echo "   Database: $DB_NAME"
+echo "   Security: JWT_SECRET and ENCRYPTION_KEY generated"
 echo ""
 
 # 🔧 PHASE 2: Server Setup
