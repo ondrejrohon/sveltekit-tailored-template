@@ -65,6 +65,7 @@ if [ -f ".env.production" ]; then
         CURRENT_DEPLOY_PATH=$(grep '^DEPLOY_PATH=' .env.production | cut -d'=' -f2)
         CURRENT_APP_PORT=$(grep '^APP_PORT=' .env.production | cut -d'=' -f2)
         CURRENT_DB_NAME=$(grep '^DB_NAME=' .env.production | cut -d'=' -f2)
+        CURRENT_DB_USER=$(grep '^DB_USER=' .env.production | cut -d'=' -f2)
         CURRENT_DB_PASS=$(grep '^DB_PASS=' .env.production | cut -d'=' -f2)
     fi
 else
@@ -78,6 +79,7 @@ else
         CURRENT_DEPLOY_PATH=$(grep '^DEPLOY_PATH=' ../deploy.config.local.sh | cut -d'"' -f2)
         CURRENT_APP_PORT=$(grep '^APP_PORT=' ../deploy.config.local.sh | cut -d'"' -f2)
         CURRENT_DB_NAME=$(grep '^DB_NAME=' ../deploy.config.local.sh | cut -d'"' -f2)
+        CURRENT_DB_USER=$(grep '^DB_USER=' ../deploy.config.local.sh | cut -d'"' -f2)
         CURRENT_DB_PASS=$(grep '^DB_PASS=' ../deploy.config.local.sh | cut -d'"' -f2)
     else
         # Use defaults from deploy.defaults.sh
@@ -104,6 +106,7 @@ if [ -z "$SERVER_HOST" ] || [[ $RECONFIGURE =~ ^[Yy]$ ]]; then
     echo "🗄️  Database Configuration"
     echo "-------------------------"
     prompt_with_default "Database name" "$CURRENT_DB_NAME" "DB_NAME"
+    prompt_with_default "Database user" "$CURRENT_DB_USER" "DB_USER"
     prompt_password "Database password" "DB_PASS"
 
     echo ""
@@ -122,10 +125,13 @@ if [ -z "$SERVER_HOST" ] || [[ $RECONFIGURE =~ ^[Yy]$ ]]; then
     echo "✅ Security keys generated successfully!"
 
     # Validate required fields
-    if [ -z "$SERVER_HOST" ] || [ -z "$SERVER_USER" ] || [ -z "$APP_NAME" ] || [ -z "$DEPLOY_PATH" ] || [ -z "$DB_NAME" ] || [ -z "$DB_PASS" ] || [ -z "$APP_PORT" ]; then
+    if [ -z "$SERVER_HOST" ] || [ -z "$SERVER_USER" ] || [ -z "$APP_NAME" ] || [ -z "$DEPLOY_PATH" ] || [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS" ] || [ -z "$APP_PORT" ]; then
         echo "❌ Error: All fields are required!"
         exit 1
     fi
+
+    # Construct DB_URL
+    DB_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}"
 
     echo ""
     echo "📝 Generating .env.production file..."
@@ -145,11 +151,7 @@ DEPLOY_PATH=$DEPLOY_PATH
 APP_PORT=$APP_PORT
 
 # Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=$DB_NAME
-DB_USER=slova_user
-DB_PASS=$DB_PASS
+DB_URL=$DB_URL
 
 # Security Configuration
 JWT_SECRET=$JWT_SECRET
