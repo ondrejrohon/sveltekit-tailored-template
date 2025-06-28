@@ -13,7 +13,6 @@ describe('Database Operations', () => {
 		const testId = crypto.randomUUID();
 		const testEmail = `test-${Date.now()}@test.com`;
 
-		console.log('Inserting test user...');
 		const [result] = await testDb
 			.insert(tables.user)
 			.values({
@@ -28,14 +27,12 @@ describe('Database Operations', () => {
 		expect(result.id).toBe(testId);
 		expect(result.email).toBe(testEmail);
 
-		console.log('Reading test user...');
 		const [readResult] = await testDb.select().from(tables.user).where(eq(tables.user.id, testId));
 
 		expect(readResult).toBeDefined();
 		expect(readResult.id).toBe(testId);
 		expect(readResult.email).toBe(testEmail);
 
-		console.log('Cleaning up test user...');
 		// Clean up
 		await testDb.delete(tables.user).where(eq(tables.user.id, testId));
 
