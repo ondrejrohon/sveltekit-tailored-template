@@ -154,8 +154,7 @@ upload_package() {
 # Deploy on server
 deploy_on_server() {
     log "Deploying on server..."
-    
-    ssh "$SERVER_USER@$SERVER_HOST" << EOF
+    ssh "$SERVER_USER@$SERVER_HOST" << 'EOF'
         set -e
         
         cd $DEPLOY_PATH
@@ -223,7 +222,7 @@ deploy_on_server() {
         fi
         
         echo "Deployment completed successfully"
-    EOF
+EOF
     
     success "Deployment completed on server"
 }
