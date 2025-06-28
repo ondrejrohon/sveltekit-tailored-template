@@ -1,12 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import * as tables from './server/db/schema.js';
 import { eq } from 'drizzle-orm';
-
-// Create a test database connection
-const testClient = postgres('postgres://ondrejrohon@localhost:5432/slova_test_db');
-const testDb = drizzle(testClient);
+import { testDb } from './server/db/test-db.js';
 
 describe('Database Operations', () => {
 	it('should write and read from user table', async () => {
