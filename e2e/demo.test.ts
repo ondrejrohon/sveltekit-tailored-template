@@ -23,4 +23,7 @@ test('home page has expected h1', async ({ page }) => {
 	expect(readUser.email).toBe('test@test.com');
 	expect(readUser.passwordHash).toBe('test');
 	expect(readUser.emailVerified).toBe(false);
+
+	// clean up
+	await testDb.delete(tables.user).where(eq(tables.user.id, user.id));
 });
