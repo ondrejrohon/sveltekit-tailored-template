@@ -46,6 +46,17 @@ echo "🔧 PHASE 1: Environment Configuration"
 echo "====================================="
 echo ""
 
+# Function to read .env.example and extract variable names
+read_env_example() {
+    if [ -f ".env.example" ]; then
+        # Extract variable names from .env.example (lines that contain = but not comments)
+        grep -E '^[A-Z_]+=' .env.example | cut -d'=' -f1
+    else
+        echo "Error: .env.example file not found!"
+        exit 1
+    fi
+}
+
 # Check if .env.production already exists
 if [ -f ".env.production" ]; then
     echo "📖 Found existing .env.production configuration"
@@ -58,7 +69,7 @@ if [ -f ".env.production" ]; then
         set +a
     else
         echo "Starting fresh configuration..."
-        # Get current values as defaults
+        # Get current values as defaults for deployment variables
         CURRENT_SERVER_HOST=$(grep '^SERVER_HOST=' .env.production | cut -d'=' -f2)
         CURRENT_SERVER_USER=$(grep '^SERVER_USER=' .env.production | cut -d'=' -f2)
         CURRENT_APP_NAME=$(grep '^APP_NAME=' .env.production | cut -d'=' -f2)
@@ -112,10 +123,6 @@ if [ -z "$SERVER_HOST" ] || [[ $RECONFIGURE =~ ^[Yy]$ ]]; then
     echo ""
     echo "🔐 Security Configuration"
     echo "------------------------"
-    # Read existing values if they exist
-    CURRENT_JWT_SECRET=$(grep '^JWT_SECRET=' .env.production 2>/dev/null | cut -d'=' -f2 || echo "")
-    CURRENT_ENCRYPTION_KEY=$(grep '^ENCRYPTION_KEY=' .env.production 2>/dev/null | cut -d'=' -f2 || echo "")
-    
     # Generate new security keys
     echo "Generating JWT secret..."
     JWT_SECRET=$(openssl rand -hex 64)
@@ -124,14 +131,105 @@ if [ -z "$SERVER_HOST" ] || [[ $RECONFIGURE =~ ^[Yy]$ ]]; then
     
     echo "✅ Security keys generated successfully!"
 
+    echo ""
+    echo "📋 Environment Variables from .env.example"
+    echo "------------------------------------------"
+    
+    # Read all variables from .env.example into an array
+    env_vars=()
+    while IFS= read -r var_name; do
+        if [ -n "$var_name" ]; then
+            env_vars+=("$var_name")
+        fi
+    done < <(read_env_example)
+    
+    # Process each variable
+    for var_name in "${env_vars[@]}"; do
+        # Skip auto-generated variables
+        case "$var_name" in
+            "JWT_SECRET"|"ENCRYPTION_KEY"|"DATABASE_URL")
+                continue
+                ;;
+        esac
+        
+        # Get current value from .env.production if it exists
+        current_value=""
+        if [ -f ".env.production" ]; then
+            current_value=$(grep "^${var_name}=" .env.production | cut -d'=' -f2- || echo "")
+        fi
+        
+        # Create user-friendly prompt descriptions
+        case "$var_name" in
+            "ORIGIN")
+                prompt_desc="Public origin URL (e.g., http://localhost:5173 for dev, https://yourdomain.com for prod)"
+                ;;
+            "ANTHROPIC_API_KEY")
+                prompt_desc="Anthropic API key for AI features (get from https://console.anthropic.com/)"
+                ;;
+            "GOOGLE_CLIENT_ID")
+                prompt_desc="Google OAuth Client ID (get from https://console.cloud.google.com/apis/credentials)"
+                ;;
+            "GOOGLE_CLIENT_SECRET")
+                prompt_desc="Google OAuth Client Secret (get from https://console.cloud.google.com/apis/credentials)"
+                ;;
+            "MAILERSEND_TOKEN")
+                prompt_desc="MailerSend API token for email functionality (get from https://www.mailersend.com/app/api-keys)"
+                ;;
+            *)
+                prompt_desc="$var_name"
+                ;;
+        esac
+        
+        # Determine if this should be a password prompt
+        case "$var_name" in
+            *"SECRET"*|*"KEY"*|*"TOKEN"*|*"PASSWORD"*)
+                if [ -n "$current_value" ]; then
+                    read -p "🔐 $prompt_desc [current value hidden]: " input
+                    if [ -z "$input" ]; then
+                        input="$current_value"
+                    fi
+                else
+                    read -s -p "🔐 $prompt_desc: " input
+                    echo ""
+                fi
+                ;;
+            *)
+                if [ -n "$current_value" ]; then
+                    read -p "🌐 $prompt_desc [$current_value]: " input
+                    if [ -z "$input" ]; then
+                        input="$current_value"
+                    fi
+                else
+                    read -p "🌐 $prompt_desc: " input
+                fi
+                ;;
+        esac
+        
+        # Store the variable with the actual input value
+        eval "${var_name}=\"${input}\""
+    done
+
     # Validate required fields
-    if [ -z "$SERVER_HOST" ] || [ -z "$SERVER_USER" ] || [ -z "$APP_NAME" ] || [ -z "$DEPLOY_PATH" ] || [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS" ] || [ -z "$APP_PORT" ]; then
-        echo "❌ Error: All fields are required!"
+    required_vars=("SERVER_HOST" "SERVER_USER" "APP_NAME" "DEPLOY_PATH" "DB_NAME" "DB_USER" "DB_PASS" "APP_PORT")
+    missing_vars=()
+    
+    for var in "${required_vars[@]}"; do
+        if [ -z "${!var}" ]; then
+            missing_vars+=("$var")
+        fi
+    done
+    
+    if [ ${#missing_vars[@]} -gt 0 ]; then
+        echo "❌ Error: All required fields must be filled!"
+        echo "Missing required fields:"
+        for var in "${missing_vars[@]}"; do
+            echo "  - $var"
+        done
         exit 1
     fi
 
-    # Construct DB_URL
-    DB_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}"
+    # Construct DATABASE_URL from the database variables we collected
+    DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}"
 
     echo ""
     echo "📝 Generating .env.production file..."
@@ -151,12 +249,33 @@ DEPLOY_PATH=$DEPLOY_PATH
 APP_PORT=$APP_PORT
 
 # Database Configuration
-DB_URL=$DB_URL
+DATABASE_URL=$DATABASE_URL
 
 # Security Configuration
 JWT_SECRET=$JWT_SECRET
 ENCRYPTION_KEY=$ENCRYPTION_KEY
 EOF
+
+    # Add all variables from .env.example (except the ones we already added)
+    for var_name in "${env_vars[@]}"; do
+        if [ -n "$var_name" ]; then
+            # Skip variables we've already added
+            case "$var_name" in
+                "JWT_SECRET"|"ENCRYPTION_KEY"|"DATABASE_URL")
+                    continue
+                    ;;
+            esac
+            
+            # Add the variable to .env.production
+            var_value="${!var_name}"
+            if [ -n "$var_value" ]; then
+                echo "$var_name=$var_value" >> .env.production
+            else
+                echo "Warning: $var_name is empty, adding empty value"
+                echo "$var_name=" >> .env.production
+            fi
+        fi
+    done
 
     echo "✅ .env.production file created successfully!"
 fi
