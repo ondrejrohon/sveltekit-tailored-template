@@ -8,6 +8,9 @@ HEALTH_CHECK_URL="http://localhost:4173/api/health"
 HEALTH_CHECK_TIMEOUT="30"
 APP_START_TIMEOUT="10"
 
+# Deployment Configuration
+DEPLOY_PATH="/app"
+
 # Backup Configuration
 KEEP_BACKUPS="2"
 

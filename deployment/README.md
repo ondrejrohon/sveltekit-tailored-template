@@ -4,26 +4,26 @@ This directory contains deployment scripts and configuration for the Slova Svelt
 
 ## Quick Setup
 
-To set up your deployment configuration interactively:
+To set up your deployment configuration and server in one go:
 
 ```bash
 cd deployment
-./setup-env.sh
+./setup.sh
 ```
 
-This script will:
-- Prompt for server host, username, app name, deploy path, app port, database name, and password
-- Use existing values from `deploy.config.local.sh` as defaults (if available)
-- Generate a `.env.production` file with your configuration
-- Keep sensitive information secure (password input is hidden)
+This comprehensive script will:
+- **Phase 1**: Configure your environment (server details, database, etc.)
+- **Phase 2**: Set up the remote server (install packages, configure database, etc.)
+- Use existing values as defaults when available
+- Generate `.env.production` with your configuration
+- Set up the complete server environment
 
 ## Files
 
-- `setup-env.sh` - Interactive configuration setup script
+- `setup.sh` - **Main setup script** (handles both configuration and server setup)
 - `deploy.sh` - Main deployment script (uses `.env.production` + `deploy.defaults.sh`)
-- `server-setup.sh` - Initial server setup script
 - `deploy.defaults.sh` - Default configuration values (timeouts, SSH options, PM2 settings)
-- `deploy.config.local.sh` - Legacy local configuration (deprecated, use `.env.production`)
+- `deploy.config.local.sh` - **Legacy** (deprecated, use `.env.production`)
 
 ## Configuration
 
@@ -50,66 +50,32 @@ These defaults are unlikely to change and are separated from user-specific setti
 
 ## Usage
 
-1. Run `./setup-env.sh` to configure your environment
+1. Run `./setup.sh` to configure your environment and set up the server
 2. Ensure your SSH key is set up for the target server
 3. Run `./deploy.sh` to deploy your application
 
-## Migration from deploy.config.local.sh
+## Migration from Old Scripts
 
-If you have an existing `deploy.config.local.sh` file:
-1. Run `./setup-env.sh` to create `.env.production` with your current values
-2. The deployment script will automatically use `.env.production` and show a deprecation warning for the old file
-3. You can safely delete `deploy.config.local.sh` after confirming everything works
+If you have existing configuration:
+- **`deploy.config.local.sh`**: `setup.sh` will automatically use these values as defaults
 
-## Usage
+## Setup Process
 
-### 1. Initial Setup (Run once)
+The `setup.sh` script provides a clear, emoji-marked process:
 
-Run the server setup script to configure your deployment:
+### 🔧 Phase 1: Environment Configuration
+- Loads existing configuration or prompts for new values
+- Creates `.env.production` with your settings
+- Validates all required fields
 
-```bash
-cd deployment
-./server-setup.sh
-```
+### 🔧 Phase 2: Server Setup
+- Tests SSH connectivity
+- Updates system packages
+- Installs required software (bun, PM2, PostgreSQL, nginx)
+- Configures database and deployment directories
+- Sets up firewall and PM2 ecosystem
 
-This script will:
-- Ask for server IP, username, app name, and deployment path
-- Ask for database name, user, and password
-- Ask for application configuration (port, timeouts, etc.)
-- Test SSH connectivity
-- Set up the remote server with all required software
-- Create a PostgreSQL database and user
-- Save all configuration to `deploy.config.local.sh`
-
-### 2. Deployment
-
-After the initial setup, you can deploy your application:
-
-```bash
-cd deployment
-./deploy.sh [environment]
-```
-
-The deployment script will:
-- Build the application locally
-- Run tests
-- Create a deployment package with database configuration
-- Upload to the server
-- Run database migrations
-- Restart the application
-- Perform health checks
-- Rollback on failure
-
-## Configuration
-
-The `deploy.config.local.sh` file contains all your deployment configuration:
-
-- Server connection details
-- Database credentials
-- Application settings
-- Timeouts and backup settings
-
-**Important**: Keep this file secure as it contains sensitive information like database passwords.
+Each step is clearly marked with emojis for easy log reading during long setup processes.
 
 ## Requirements
 
