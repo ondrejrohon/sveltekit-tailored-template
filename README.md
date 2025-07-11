@@ -7,8 +7,19 @@ all the nice stuff that I like to use for web dev
 2. edit package.json project name
 3. generate envs:
   JWT_SECRET by running: `openssl rand -base64 32`
-  ENCRYPTION_KEY: `openssl rand -base64 32`
-3. create project on GCP, allow google sign in, send emails
+  ENCRYPTION_KEY: `openssl rand -base64 16`
+  DATABASE_URL: (based on your db)
+3. create project on GCP, allow google sign in
+4. create project on coolify (app + db)
+5. setup domain on cloudflare
+6. make sure that db port is not taken
+7. verify that it sends emails
+
+## Connect to DB
+- setup SSH connection to server
+- find docker postgres container id: `docker ps`
+- find ip address of docker postgres container:  `docker inspect CONTAINER_ID | grep IPAddress`
+- use IP as host/socket
 
 ## Lucia Auth
 https://lucia-auth.com/
