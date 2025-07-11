@@ -10,18 +10,17 @@ export const GET: RequestHandler = async ({ locals }) => {
 		const isAuthenticated = !!locals.user;
 
 		return new Response(
-			'ok'
-			// JSON.stringify({
-			// 	status: 'ok',
-			// 	timestamp: new Date().toISOString(),
-			// 	database: 'connected',
-			// 	authenticated: isAuthenticated
-			// }),
-			// {
-			// 	headers: {
-			// 		'Content-Type': 'application/json'
-			// 	}
-			// }
+			JSON.stringify({
+				status: 'ok',
+				timestamp: new Date().toISOString(),
+				database: 'connected',
+				authenticated: isAuthenticated
+			}),
+			{
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			}
 		);
 	} catch (error) {
 		console.error('Health check failed:', error);
