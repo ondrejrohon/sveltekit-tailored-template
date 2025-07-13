@@ -17,8 +17,8 @@ interface EmailOptions {
 export async function sendEmail(options: EmailOptions) {
 	try {
 		const sentFrom = new Sender(
-			options.from || 'hello@ondrejrohon.com',
-			options.fromName || 'Ondrej Rohon'
+			options.from || 'noreply@ondrejrohon.com',
+			options.fromName || 'Slova Test'
 		);
 
 		const recipients = [new Recipient(options.to, options.toName || options.to)];

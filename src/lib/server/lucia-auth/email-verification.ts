@@ -6,6 +6,8 @@ import { ExpiringTokenBucket } from './rate-limit';
 import { encodeBase32 } from '@oslojs/encoding';
 
 import type { RequestEvent } from '@sveltejs/kit';
+import { sendEmail } from '../email/send-email';
+import { generateVerificationEmailTemplate } from '../email/verification-email-template';
 
 export async function getUserEmailVerificationRequest(
 	userId: string,
@@ -49,6 +51,11 @@ export async function deleteUserEmailVerificationRequest(userId: string): Promis
 
 export function sendVerificationEmail(email: string, code: string): void {
 	console.log(`To ${email}: Your verification code is ${code}`);
+	sendEmail({
+		to: email,
+		subject: 'Verify your email',
+		html: generateVerificationEmailTemplate(code)
+	});
 }
 
 export function setEmailVerificationRequestCookie(
