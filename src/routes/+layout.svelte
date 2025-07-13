@@ -10,9 +10,7 @@
 	<nav class="flex items-center justify-between p-4">
 		<a href="/">Home</a>
 		{#if data?.user}
-			<form method="post" action="?/logout" use:enhance>
-				<button>Sign out</button>
-			</form>
+			<a href="/signout">Sign out</a>
 		{:else}
 			<div class="flex gap-4">
 				<a href="/login">Login</a>
@@ -22,4 +20,6 @@
 	</nav>
 </header>
 
-{@render children()}
+<main class="mt-[3.5rem] p-4">
+	{@render children()}
+</main>
