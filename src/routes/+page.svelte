@@ -1,1 +1,1 @@
-<h1 class="text-3xl font-extrabold">Slova</h1>
+<h1 class="text-3xl font-extrabold">SvelteKit Tailored Template</h1>
