@@ -1,6 +1,6 @@
-# Sveltekit Repo
+# Sveltekit Tailored Template
 
-all the nice stuff that I like to use for web dev
+Start your own project by cloning this repository. It reuses code from lib folder of https://github.com/ondrejrohon/sveltekit-tailored.
 
 ## Setup
 1. Clone this repo
