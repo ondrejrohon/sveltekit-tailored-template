@@ -1,3 +1,3 @@
-import { googleLoginHandler } from 'sveltekit-drizzle-lucia-template';
+import { googleLoginHandler } from 'sveltekit-tailored';
 
 export const GET = googleLoginHandler;

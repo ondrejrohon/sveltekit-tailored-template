@@ -1,3 +1,3 @@
-import { authHandler } from 'sveltekit-drizzle-lucia-template';
+import { authHandler } from 'sveltekit-tailored';
 
 export const handle = authHandler;

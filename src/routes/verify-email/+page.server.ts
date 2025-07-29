@@ -1,4 +1,4 @@
-import { verificationLoadHandler, verificationActions } from 'sveltekit-drizzle-lucia-template';
+import { verificationLoadHandler, verificationActions } from 'sveltekit-tailored';
 
 export const load = verificationLoadHandler;
 

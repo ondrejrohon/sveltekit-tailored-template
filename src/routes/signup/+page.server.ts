@@ -1,4 +1,4 @@
-import { signupLoadHandler, signupActions } from 'sveltekit-drizzle-lucia-template';
+import { signupLoadHandler, signupActions } from 'sveltekit-tailored';
 
 export const load = signupLoadHandler;
 

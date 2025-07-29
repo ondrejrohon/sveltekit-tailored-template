@@ -1,4 +1,4 @@
-import { jwtLoginHandler, jwtRefreshHandler } from 'sveltekit-drizzle-lucia-template';
+import { jwtLoginHandler, jwtRefreshHandler } from 'sveltekit-tailored';
 
 export const POST = jwtLoginHandler;
 

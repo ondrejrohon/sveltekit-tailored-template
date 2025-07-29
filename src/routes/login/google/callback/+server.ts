@@ -1,3 +1,3 @@
-import { googleLoginCallbackHandler } from 'sveltekit-drizzle-lucia-template';
+import { googleLoginCallbackHandler } from 'sveltekit-tailored';
 
 export const GET = googleLoginCallbackHandler;

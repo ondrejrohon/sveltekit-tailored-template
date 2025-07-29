@@ -1,7 +1,7 @@
 import {
 	resetPasswordVerificationActions,
 	resetPasswordVerificationLoadHandler
-} from 'sveltekit-drizzle-lucia-template';
+} from 'sveltekit-tailored';
 
 export const load = resetPasswordVerificationLoadHandler;
 

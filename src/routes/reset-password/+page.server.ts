@@ -1,4 +1,4 @@
-import { resetPasswordLoadHandler, resetPasswordActions } from 'sveltekit-drizzle-lucia-template';
+import { resetPasswordLoadHandler, resetPasswordActions } from 'sveltekit-tailored';
 
 export const load = resetPasswordLoadHandler;
 

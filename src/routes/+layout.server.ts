@@ -1,4 +1,4 @@
-import { layoutLoadHandler } from 'sveltekit-drizzle-lucia-template';
+import { layoutLoadHandler } from 'sveltekit-tailored';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = layoutLoadHandler;

@@ -1,4 +1,4 @@
-import { loginLoadHandler, loginActions } from 'sveltekit-drizzle-lucia-template';
+import { loginLoadHandler, loginActions } from 'sveltekit-tailored';
 
 export const load = loginLoadHandler;
 
