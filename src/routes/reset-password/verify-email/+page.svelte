@@ -10,18 +10,21 @@
 <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
 	<div class="w-full max-w-md space-y-8">
 		<div class="text-center">
-			<h1 class="mb-2 text-3xl font-bold text-gray-900">Verify your email address</h1>
-			<p class="text-gray-600">We sent an 8-digit code to {data.email}</p>
+			<h1 class="mb-2 text-3xl font-bold text-gray-900">Check your email</h1>
+			<p class="text-gray-600">
+				We sent a verification code to <strong>{data.email}</strong> to confirm your password reset request
+			</p>
 		</div>
 
 		<div class="rounded-lg border border-gray-200 bg-white px-6 py-8 shadow-lg">
 			<form method="post" use:enhance class="space-y-6">
 				<div>
 					<label for="code" class="mb-2 block text-sm font-medium text-gray-700">
-						Verification Code
+						Enter verification code
 					</label>
 					<input
 						id="code"
+						data-testid="verification-code"
 						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 						name="code"
 						type="text"
@@ -34,18 +37,18 @@
 					class="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 					type="submit"
 				>
-					Verify Email
+					Continue to reset password
 				</Button>
 			</form>
 
 			<div class="mt-6 text-center">
 				<p class="text-sm text-gray-600">
-					Didn't receive the code?
+					Don't see the email? Check your spam folder or
 					<a
 						href="/forgot-password"
 						class="font-medium text-blue-600 transition-colors hover:text-blue-500"
 					>
-						Request a new one
+						try again
 					</a>
 				</p>
 			</div>

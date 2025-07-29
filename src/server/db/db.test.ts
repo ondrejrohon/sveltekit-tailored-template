@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import * as tables from './server/db/schema.js';
+import { testDb } from 'src/server/db/test-db';
+import * as tables from './schema.js';
 import { eq } from 'drizzle-orm';
-import { testDb } from './server/db/test-db.js';
 
 describe('Database Operations', () => {
 	it('should write and read from user table', async () => {
@@ -30,7 +30,5 @@ describe('Database Operations', () => {
 
 		// Clean up
 		await testDb.delete(tables.user).where(eq(tables.user.id, testId));
-
-		console.log('Test completed successfully!');
 	});
 });

@@ -1,10 +1,12 @@
 import { defineConfig } from 'drizzle-kit';
 
+if (!process.env.DATABASE_TEST_URL) throw new Error('DATABASE_TEST_URL is not set');
+
 export default defineConfig({
-	schema: './src/lib/server/db/schema.ts',
+	schema: './src/server/db/schema.ts',
 
 	dbCredentials: {
-		url: 'postgres://ondrejrohon@localhost:5432/slova_test_db'
+		url: process.env.DATABASE_TEST_URL
 	},
 
 	verbose: true,

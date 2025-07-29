@@ -1,5 +1,5 @@
+import { db } from 'src/server/db';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
 
 export const GET: RequestHandler = async ({ locals }) => {
 	try {
