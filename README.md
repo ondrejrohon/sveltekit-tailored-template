@@ -3,9 +3,8 @@
 Start your own project by cloning this repository. It reuses code from lib folder of https://github.com/ondrejrohon/sveltekit-tailored.
 
 ## Setup
-1. Clone this repo
-2. edit package.json project name
-3. generate envs:
+1. Clone this repo or use scaffold.sh from https://github.com/ondrejrohon/sveltekit-tailored/blob/main/scaffold.sh
+2. generate envs:
   JWT_SECRET by running: `openssl rand -base64 32`
   ENCRYPTION_KEY: `openssl rand -base64 16`
   DATABASE_URL: (based on your db)
